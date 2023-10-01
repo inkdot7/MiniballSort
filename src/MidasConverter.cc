@@ -12,6 +12,8 @@ void MiniballMidasConverter::SetBlockHeader( char *input_header ){
 	
 }
 
+int global_header_sequence = -1;
+
 // Function to process header words
 void MiniballMidasConverter::ProcessBlockHeader( unsigned long nblock ){
 		
@@ -36,6 +38,10 @@ void MiniballMidasConverter::ProcessBlockHeader( unsigned long nblock ){
 	(block_header[8] & 0xFF) << 24 | (block_header[9]& 0xFF) << 16 |
 	(block_header[10]& 0xFF) << 8  | (block_header[11]& 0xFF);
 	
+	global_header_sequence =
+	  ((block_header[11]& 0xFF) << 24) | ((block_header[10]& 0xFF) << 16) |
+	  ((block_header[ 9]& 0xFF) << 8 ) | ((block_header[ 8]& 0xFF));
+
 	header_stream = (block_header[12] & 0xFF) << 8 | (block_header[13]& 0xFF);
 	
 	header_tape = (block_header[14] & 0xFF) << 8 | (block_header[15]& 0xFF);
@@ -308,6 +314,12 @@ void MiniballMidasConverter::ProcessFebexData(){
 	
 	// FEBEX timestamps are in 10ns precision?
 	my_tm_stp = my_tm_stp*10;
+
+	if (my_data_id == 3)
+	  printf ("\nfebexdump: %4d %20lld %10d\n",
+		  my_sfp_id * 256 + my_board_id * 16 + my_ch_id,
+		  my_tm_stp/10,
+		  global_header_sequence);
 	
 	// First of the data items
 	if( !flag_febex_data0 && !flag_febex_data1 &&
